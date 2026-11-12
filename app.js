@@ -428,7 +428,14 @@ $("login-form").addEventListener("submit", async (event) => {
 $("logout-btn").addEventListener("click", () => logout());
 
 // Bonus: Mini GraphiQL
-$("gql-query").value = USER_QUERY;
+// Default example query (short, no personal data)
+$("gql-query").value = `{
+  user {
+    id
+    login
+    auditRatio
+  }
+}`;
 $("gql-run").addEventListener("click", async () => {
   const output = $("gql-output");
   output.textContent = "Running...";
