@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zone01 Profile</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ========== LOGIN ========== -->
+  <main id="login-view" class="login-view">
+    <form id="login-form" class="card login-card" novalidate>
+      <h1>Zone01 Profile</h1>
+      <p class="muted">Sign in with your Zone01 Athens account</p>
+
+      <label for="identifier">Username or email</label>
+      <input id="identifier" name="identifier" type="text" autocomplete="username" required>
+
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+
+      <p id="login-error" class="error" role="alert"></p>
+
+      <button id="login-btn" type="submit">Sign in</button>
+    </form>
+  </main>
+
+  <!-- ========== PROFILE ========== -->
+  <div id="profile-view" hidden>
+    <header class="topbar">
+      <span class="brand">Zone01 Profile</span>
+      <button id="logout-btn" class="btn-secondary" type="button">Log out</button>
+    </header>
+
+    <main class="container">
+      <p id="profile-status" class="muted"></p>
+
+      <!-- Οι 3 υποχρεωτικές ενότητες -->
+      <section class="grid">
+        <article class="card">
+          <h2>User</h2>
+          <p class="big" id="user-login"></p>
+          <dl class="details">
+            <dt>Name</dt><dd id="user-name"></dd>
+            <dt>Email</dt><dd id="user-email"></dd>
+            <dt>User ID</dt><dd id="user-id"></dd>
+            <dt>Level</dt><dd id="user-level"></dd>
+          </dl>
+        </article>
+
+        <article class="card">
+          <h2>XP</h2>
+          <p class="big accent" id="total-xp"></p>
+          <p class="muted" id="total-xp-exact"></p>
+          <h3>Latest XP</h3>
+          <ul id="recent-xp" class="list"></ul>
+        </article>
+
+        <article class="card">
+          <h2>Audits</h2>
+          <p class="big" id="audit-ratio"></p>
+          <p id="audit-message" class="muted"></p>
+          <dl class="details">
+            <dt>Done</dt><dd id="audit-done" class="up"></dd>
+            <dt>Received</dt><dd id="audit-received" class="down"></dd>
+          </dl>
+        </article>
+      </section>
+
+      <!-- 4η ενότητα: στατιστικά με SVG -->
+      <section class="stats">
+        <h2>Statistics</h2>
+        <div class="charts">
+          <article class="card chart-card wide">
+            <h3>XP over time</h3>
+            <div id="chart-xp-time"></div>
+          </article>
+          <article class="card chart-card">
+            <h3>XP by project (top 8)</h3>
+            <div id="chart-xp-project"></div>
+          </article>
+          <article class="card chart-card">
+            <h3>Audits: done vs received</h3>
+            <div id="chart-audits"></div>
+            <p class="legend">
+              <span class="dot up-bg"></span> Done
+              <span class="dot down-bg"></span> Received
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <!-- Bonus: δικό μας μικρό GraphiQL -->
+      <section class="card graphiql">
+        <h2>Mini GraphiQL</h2>
+        <p class="muted">Write any GraphQL query and run it with your token.</p>
+        <textarea id="gql-query" spellcheck="false" rows="8"></textarea>
+        <button id="gql-run" type="button">Run query</button>
+        <pre id="gql-output"></pre>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
