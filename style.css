@@ -1,4 +1,4 @@
-/* ===== Χρώματα (μεταβλητές) ===== */
+/* ===== Colors (variables) ===== */
 :root {
   --bg: #0d0f14;
   --card: #161a22;
@@ -37,7 +37,7 @@ h3 { font-size: 1rem; }
   padding: 20px;
 }
 
-/* ===== Φόρμες & κουμπιά ===== */
+/* ===== Forms & buttons ===== */
 label { display: block; margin: 14px 0 6px; font-size: .9rem; color: var(--muted); }
 
 input, textarea {
@@ -99,7 +99,7 @@ button:disabled { opacity: .6; cursor: wait; }
 .up-bg { background: var(--up); }
 .down-bg { background: var(--down); }
 
-/* ===== SVG στοιχεία ===== */
+/* ===== SVG elements ===== */
 .chart { width: 100%; height: auto; display: block; }
 .chart .grid-line { stroke: var(--border); stroke-dasharray: 4 4; }
 .chart .axis-label { fill: var(--muted); font-size: 11px; }

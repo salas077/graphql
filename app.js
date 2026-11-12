@@ -1,7 +1,7 @@
 "use strict";
 
 /* =========================================================
-   1. ΡΥΘΜΙΣΕΙΣ
+   1. SETTINGS
    ========================================================= */
 const DOMAIN = "platform.zone01.gr";
 const SIGNIN_URL = `https://${DOMAIN}/api/auth/signin`;
@@ -13,7 +13,7 @@ const SVG_NS = "http://www.w3.org/2000/svg";
    2. GRAPHQL QUERIES
    ========================================================= */
 
-// (α) NORMAL query: διαλέγουμε πίνακα και πεδία, χωρίς arguments.
+// (a) NORMAL query: pick a table and fields, no arguments.
 const USER_QUERY = `{
   user {
     id
@@ -25,8 +25,8 @@ const USER_QUERY = `{
   }
 }`;
 
-// (β) Query ΜΕ ARGUMENTS (where, order_by, μεταβλητή $type)
-// (γ) NESTED query: μέσα στο transaction ζητάμε και το object του.
+// (b) Query WITH ARGUMENTS (where, order_by, variable $type)
+// (c) NESTED query: inside the transaction we also request its object.
 const TRANSACTIONS_QUERY = `query ($type: String!) {
   transaction(
     where: { type: { _eq: $type } }
@@ -44,11 +44,11 @@ const TRANSACTIONS_QUERY = `query ($type: String!) {
 }`;
 
 /* =========================================================
-   3. ΒΟΗΘΗΤΙΚΕΣ ΣΥΝΑΡΤΗΣΕΙΣ
+   3. HELPER FUNCTIONS
    ========================================================= */
 const $ = (id) => document.getElementById(id);
 
-// base64 που δουλεύει και με ελληνικούς/ειδικούς χαρακτήρες
+// base64 that also works with Greek/special characters
 function toBase64(text) {
   const bytes = new TextEncoder().encode(text);
   let binary = "";
@@ -56,7 +56,7 @@ function toBase64(text) {
   return btoa(binary);
 }
 
-// Διαβάζει το μεσαίο κομμάτι (payload) του JWT
+// Reads the middle part (payload) of the JWT
 function decodeJwt(token) {
   try {
     let payload = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
@@ -77,7 +77,7 @@ function isTokenValid(token) {
   return payload !== null && payload.exp * 1000 > Date.now();
 }
 
-// 51800 -> "51.8 kB", 693000 -> "693 kB" (3 σημαντικά ψηφία, όπως το platform)
+// 51800 -> "51.8 kB", 693000 -> "693 kB" (3 significant digits, like the platform)
 function formatXP(amount) {
   if (amount >= 1_000_000) return Number((amount / 1_000_000).toPrecision(3)) + " MB";
   if (amount >= 1000) return Number((amount / 1000).toPrecision(3)) + " kB";
@@ -91,10 +91,10 @@ function formatDate(value) {
 }
 
 /* =========================================================
-   4. ΕΠΙΚΟΙΝΩΝΙΑ ΜΕ ΤΟΝ SERVER
+   4. COMMUNICATION WITH THE SERVER
    ========================================================= */
 
-// Login: Basic auth -> παίρνουμε JWT
+// Login: Basic auth -> we get a JWT
 async function login(identifier, password) {
   let response;
   try {
@@ -114,7 +114,7 @@ async function login(identifier, password) {
   localStorage.setItem(TOKEN_KEY, token);
 }
 
-// Στέλνει οποιοδήποτε GraphQL query με Bearer token
+// Sends any GraphQL query with a Bearer token
 async function graphql(query, variables = {}) {
   const response = await fetch(GRAPHQL_URL, {
     method: "POST",
@@ -138,11 +138,12 @@ async function graphql(query, variables = {}) {
 }
 
 /* =========================================================
-   5. ΕΠΕΞΕΡΓΑΣΙΑ ΔΕΔΟΜΕΝΩΝ
+   5. DATA PROCESSING
    ========================================================= */
 
-// Βρίσκει το eventId του κύριου module (div-01), ώστε το συνολικό XP
-// να ταιριάζει με αυτό που δείχνει το platform (χωρίς piscine κ.λπ.)
+// Finds the eventId of the main module (div-01), so that the total XP
+// matches the platform. Piscine JS belongs to div-01 and counts;
+// Piscine Go and other events have their own eventId and are excluded.
 function findModuleEventId(transactions) {
   const counts = {};
   for (const t of transactions) {
@@ -165,7 +166,7 @@ function itemName(t) {
 }
 
 /* =========================================================
-   6. ΕΜΦΑΝΙΣΗ ΣΕΛΙΔΩΝ (VIEWS)
+   6. PAGE DISPLAY (VIEWS)
    ========================================================= */
 function showView(name) {
   $("login-view").hidden = name !== "login";
@@ -174,7 +175,7 @@ function showView(name) {
 
 function logout(message = "") {
   localStorage.removeItem(TOKEN_KEY);
-  // Καθαρίζουμε ό,τι δεδομένα έμειναν στη σελίδα
+  // Clear any data left on the page
   ["chart-xp-time", "chart-xp-project", "chart-audits", "recent-xp", "gql-output"]
     .forEach((id) => { $(id).replaceChildren(); });
   showView("login");
@@ -186,7 +187,7 @@ async function showProfile() {
   $("profile-status").textContent = "Loading your data...";
 
   try {
-    // Τρία αιτήματα ταυτόχρονα
+    // Three requests at the same time
     const [userData, xpData, levelData] = await Promise.all([
       graphql(USER_QUERY),
       graphql(TRANSACTIONS_QUERY, { type: "xp" }),
@@ -213,7 +214,7 @@ async function showProfile() {
 }
 
 /* =========================================================
-   7. ΟΙ 3 ΕΝΟΤΗΤΕΣ
+   7. THE 3 SECTIONS
    ========================================================= */
 function renderUser(user, level) {
   const attrs = user.attrs || {};
@@ -256,10 +257,10 @@ function renderAudits(user) {
 }
 
 /* =========================================================
-   8. SVG ΓΡΑΦΗΜΑΤΑ
+   8. SVG CHARTS
    ========================================================= */
 
-// Φτιάχνει ένα SVG στοιχείο με attributes και (προαιρετικά) το βάζει σε parent
+// Creates an SVG element with attributes and (optionally) adds it to a parent
 function svgEl(tag, attrs = {}, parent = null) {
   const el = document.createElementNS(SVG_NS, tag);
   for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
@@ -277,7 +278,7 @@ function addTooltip(el, text) {
   svgEl("title", {}, el).textContent = text;
 }
 
-// Γράφημα 1: LINE CHART — αθροιστικό XP στον χρόνο
+// Chart 1: LINE CHART — cumulative XP over time
 function drawXpOverTime(transactions) {
   const box = $("chart-xp-time");
   box.replaceChildren();
@@ -301,30 +302,30 @@ function drawXpOverTime(transactions) {
 
   const svg = svgEl("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": "XP over time" }, box);
 
-  // Οριζόντιες γραμμές + ετικέτες στον άξονα Y
+  // Horizontal lines + labels on the Y axis
   for (let i = 0; i <= 4; i++) {
     const value = (maxY * i) / 4;
     svgEl("line", { x1: P.left, x2: W - P.right, y1: y(value), y2: y(value), class: "grid-line" }, svg);
     svgText(svg, P.left - 8, y(value) + 4, formatXP(value), { class: "axis-label", "text-anchor": "end" });
   }
 
-  // Ημερομηνίες στον άξονα X
+  // Dates on the X axis
   svgText(svg, P.left, H - 12, formatDate(minT), { class: "axis-label", "text-anchor": "start" });
   svgText(svg, W - P.right, H - 12, formatDate(maxT), { class: "axis-label", "text-anchor": "end" });
 
-  // Γεμάτη περιοχή κάτω από τη γραμμή + η γραμμή
+  // Filled area under the line + the line itself
   const coords = points.map((p) => `${x(p.time)},${y(p.total)}`);
   svgEl("path", { d: `M ${x(minT)},${y(0)} L ${coords.join(" L ")} L ${x(maxT)},${y(0)} Z`, class: "area" }, svg);
   svgEl("polyline", { points: coords.join(" "), class: "line" }, svg);
 
-  // Κουκκίδες με tooltip (hover)
+  // Dots with tooltip (hover)
   for (const p of points) {
     const dot = svgEl("circle", { cx: x(p.time), cy: y(p.total), r: 5, class: "point" }, svg);
     addTooltip(dot, `${itemName(p.t)}: +${formatXP(p.t.amount)}\nTotal: ${formatXP(p.total)}\n${formatDate(p.time)}`);
   }
 }
 
-// Γράφημα 2: BAR CHART — XP ανά project (top 8)
+// Chart 2: BAR CHART — XP per project (top 8)
 function drawXpByProject(transactions) {
   const box = $("chart-xp-project");
   box.replaceChildren();
@@ -356,7 +357,7 @@ function drawXpByProject(transactions) {
   });
 }
 
-// Γράφημα 3: DONUT — audits done vs received
+// Chart 3: DONUT — audits done vs received
 function drawAuditDonut(user) {
   const box = $("chart-audits");
   box.replaceChildren();
@@ -394,10 +395,10 @@ function drawAuditDonut(user) {
 }
 
 /* =========================================================
-   9. EVENTS (τι γίνεται όταν ο χρήστης κάνει κάτι)
+   9. EVENTS (what happens when the user does something)
    ========================================================= */
 $("login-form").addEventListener("submit", async (event) => {
-  event.preventDefault(); // μην κάνεις reload τη σελίδα
+  event.preventDefault(); // don't reload the page
 
   const identifier = $("identifier").value.trim();
   const password = $("password").value;
@@ -440,7 +441,7 @@ $("gql-run").addEventListener("click", async () => {
 });
 
 /* =========================================================
-   10. ΕΚΚΙΝΗΣΗ
+   10. STARTUP
    ========================================================= */
 if (isTokenValid(getToken())) {
   showProfile();
