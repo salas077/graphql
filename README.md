@@ -2,7 +2,7 @@
 
 A personal profile page for Zone01 Athens. It signs in with your platform account, reads your data from the Zone01 GraphQL API and shows it with custom SVG charts.
 
-**Live demo:** _coming soon_
+**Live demo:** https://salas077.github.io/graphql/
 
 ## Features
 
